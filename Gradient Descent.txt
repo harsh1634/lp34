@@ -1,0 +1,48 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define the function to minimize (e.g., f(x) = x^2)
+def f(x):
+    return x ** 2
+
+# Define the derivative of the function (e.g., f'(x) = 2x)
+def df(x):
+    return 2 * x
+
+# Gradient Descent Algorithm
+def gradient_descent(starting_point, learning_rate, num_iterations):
+    x = starting_point
+    x_history = []  # To store the history of x values
+    f_history = []  # To store the function values
+    
+    for _ in range(num_iterations):
+        x_history.append(x)
+        f_history.append(f(x))
+        
+        # Update the current position using the gradient
+        x = x - learning_rate * df(x)
+        
+    return x, x_history, f_history
+
+# Parameters
+starting_point = 10  # Starting point for gradient descent
+learning_rate = 0.1  # Learning rate
+num_iterations = 20  # Number of iterations
+
+# Run Gradient Descent
+minima, x_history, f_history = gradient_descent(starting_point, learning_rate, num_iterations)
+
+# Print the results
+print(f"Local minima found at x = {minima}")
+print(f"Function value at minima: f(x) = {f(minima)}")
+
+# Plotting the results
+x = np.linspace(-12, 12, 400)
+plt.plot(x, f(x), label='f(x) = x^2', color='blue')  # Plot the function
+plt.scatter(x_history, f_history, color='red', label='Gradient Descent Steps')  # Plot the steps
+plt.title('Gradient Descent Optimization')
+plt.xlabel('x')
+plt.ylabel('f(x)')
+plt.legend()
+plt.grid()
+plt.show()

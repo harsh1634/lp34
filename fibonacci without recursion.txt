@@ -1,0 +1,21 @@
+#include <iostream>
+using namespace std;
+int main() {
+    int n1 = 0, n2 = 1, n3, i, number;
+    
+    // Ask user for number of elements
+    cout << "Enter the number of elements: ";
+    cin >> number;
+    
+    // Print the first two Fibonacci numbers (0 and 1)
+    cout << n1 << " " << n2 << " ";
+    
+    // Start loop from 2 as 0 and 1 are already printed
+    for(i = 2; i < number; ++i) {
+        n3 = n1 + n2;  // Calculate the next number in series
+        cout << n3 << " ";  // Print the next number
+        n1 = n2;  // Shift n1 to n2
+        n2 = n3;  // Shift n2 to the newly calculated n3
+    }
+    return 0;
+}

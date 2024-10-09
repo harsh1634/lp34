@@ -1,0 +1,79 @@
+# 1. Importing necessary libraries
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from keras.models import Sequential
+from keras.layers import Dense
+from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
+
+# 2. Load the dataset
+df = pd.read_csv("Churn_Modelling.csv")
+
+# 3. Data Preprocessing
+print(df.head())  # Show first few rows
+print(df.shape)  # Show shape of the dataframe
+print(df.describe())  # Statistical summary
+print(df.isnull().sum())  # Check for null values
+df.dropna(inplace=True)  # Remove rows with null values
+df.drop(['RowNumber', 'Surname', 'CustomerId'], axis=1, inplace=True)  # Drop unnecessary columns
+
+# 4. Data Visualization
+def visualization(x, y, xlabel):
+    plt.figure(figsize=(10, 5))
+    plt.hist([x, y], color=['red', 'green'], label=['exit', 'not_exit'])
+    plt.xlabel(xlabel, fontsize=20)
+    plt.ylabel("No. of customers", fontsize=20)
+    plt.legend()
+
+# Visualize churn based on tenure and age
+visualization(df[df['Exited'] == 1]['Tenure'], df[df['Exited'] == 0]['Tenure'], "Tenure")
+visualization(df[df['Exited'] == 1]['Age'], df[df['Exited'] == 0]['Age'], "Age")
+
+# 5. Converting Categorical Variables
+X = df[['CreditScore', 'Gender', 'Age', 'Tenure', 'Balance', 'NumOfProducts', 'HasCrCard', 'IsActiveMember', 'EstimatedSalary']]
+X = pd.get_dummies(X, drop_first=True)  # Convert categorical variable into dummy/indicator variables
+
+# 6. Splitting the dataset into training and testing sets
+y = df['Exited']  # Target variable
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=42)
+
+# 7. Normalizing feature values
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)  # Fit and transform training data
+X_test = sc.transform(X_test)  # Transform testing data
+
+# 8. Building the Neural Network Classifier
+classifier = Sequential()  # Create a sequential model
+classifier.add(Dense(units=6, activation='relu', kernel_initializer='uniform', input_dim=X_train.shape[1]))  # Input layer
+classifier.add(Dense(units=6, activation='relu', kernel_initializer='uniform'))  # Hidden layer
+classifier.add(Dense(units=1, activation='sigmoid', kernel_initializer='uniform'))  # Output layer
+
+# Compile the model
+classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+classifier.summary()  # Show model summary
+
+# 9. Training the Neural Network
+classifier.fit(X_train, y_train, batch_size=10, epochs=50)  # Fit the model to training data
+
+# 10. Making Predictions
+y_pred = classifier.predict(X_test)  # Predict on test data
+y_pred = (y_pred > 0.5)  # Convert probabilities to binary output
+
+# 11. Evaluating the Model
+cm = confusion_matrix(y_test, y_pred)  # Confusion matrix
+accuracy = accuracy_score(y_test, y_pred)  # Accuracy score
+print("Accuracy:", accuracy)
+
+# 12. Plotting the Confusion Matrix
+plt.figure(figsize=(10, 7))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')  # Visualize confusion matrix
+plt.xlabel('Predicted')
+plt.ylabel('Truth')
+plt.title('Confusion Matrix')
+plt.show()
+
+# 13. Classification Report
+print(classification_report(y_test, y_pred))  # Detailed classification metrics

@@ -1,0 +1,52 @@
+#include <iostream> // Corrected to include the proper header
+#include <algorithm> // For sorting
+using namespace std;
+
+// Structure to represent an item with weight and value
+struct Item {
+    float weight;
+    int value;
+};
+
+// Structure to represent a node in the decision tree
+struct Node {
+    int level;         // Level in the decision tree
+    int profit;       // Profit accumulated so far
+    float weight;      // Weight accumulated so far
+    int bound;         // Upper bound on profit
+};
+
+// Comparison function to sort items by value-to-weight ratio
+bool cmp(Item a, Item b) {
+    double r1 = (double)a.value / a.weight;
+    double r2 = (double)b.value / b.weight;
+    return r1 > r2; // Sort in descending order
+}
+
+// Function to calculate the upper bound on profit for a node
+int bound(Node u, int n, int W, Item arr[]) {
+    if (u.weight >= W) return 0; // If weight exceeds capacity, return 0 profit
+
+    int profit_bound = u.profit; // Start with the current profit
+    int j = u.level + 1;          // Next item index
+    int totweight = u.weight;     // Total weight so far
+
+    // Add items to the bound while they fit in the knapsack
+    while (j < n && totweight + arr[j].weight <= W) {
+        totweight += arr[j].weight;         // Update total weight
+        profit_bound += arr[j].value;       // Update profit
+        j++;
+    }
+
+    // If there is still weight capacity, add fractional part of the next item
+    if (j < n) {
+        profit_bound += (W - totweight) * arr[j].value / arr[j].weight;
+    }
+
+    return profit_bound; // Return the calculated profit bound
+}
+
+int main() {
+    // Example usage
+    return 0; // Return statement
+}

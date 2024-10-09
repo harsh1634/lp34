@@ -1,0 +1,40 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+// Function to partition the array around a pivot
+int partition(int arr[], int low, int high, int pivot) {
+    int PIndex = low; // Initialize pivot index
+    for (int i = low; i <= high; i++) {
+        if (arr[i] <= pivot) { // If current element is less than or equal to pivot
+            swap(arr[PIndex], arr[i]); // Swap elements
+            PIndex++; // Move pivot index to the right
+        }
+    }
+    return PIndex - 1; // Return the final pivot index
+}
+
+// QuickSort function
+void quickSort(int arr[], int low, int high) {
+    if (low < high) { // Continue sorting while there are elements to sort
+        int pivot = arr[high]; // Choose the last element as the pivot
+        int PIndex = partition(arr, low, high, pivot); // Partition the array
+        quickSort(arr, low, PIndex - 1); // Recursively sort left part
+        quickSort(arr, PIndex + 1, high); // Recursively sort right part
+    }
+}
+
+// Main function
+int main() {
+    int arr[7] = {6, 3, 9, 5, 2, 8, 7}; // Input array
+    int n = sizeof(arr) / sizeof(arr[0]); // Calculate the number of elements
+
+    quickSort(arr, 0, n - 1); // Call quickSort
+
+    // Print the sorted array
+    cout << "The sorted array is: ";
+    for (int i = 0; i < n; i++) {
+        cout << arr[i] << " "; // Output each element
+    }
+    cout << endl; // New line after printing array
+    return 0; // End of program
+}

@@ -1,0 +1,38 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+// Function to solve the 0/1 Knapsack problem
+int knapsack(int W, const vector<int>& weights, const vector<int>& values, int n) {
+    // Create a 2D DP array to store maximum value for each weight and item
+    vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));
+
+    // Build the DP table
+    for (int i = 1; i <= n; i++) {
+        for (int w = 0; w <= W; w++) {
+            // If the weight of the current item is more than the current capacity, skip it
+            if (weights[i - 1] <= w) {
+                // Take the maximum of including or excluding the current item
+                dp[i][w] = max(dp[i - 1][w], dp[i - 1][w - weights[i - 1]] + values[i - 1]);
+            } else {
+                // If the item cannot be included, carry forward the value from the previous item
+                dp[i][w] = dp[i - 1][w];
+            }
+        }
+    }
+
+    // The last cell of the DP table contains the maximum value for the full capacity
+    return dp[n][W];
+}
+
+int main() {
+    int W = 50; // Capacity of the knapsack
+    vector<int> weights = {10, 20, 30}; // Weights of the items
+    vector<int> values = {60, 100, 120}; // Values of the items
+    int n = weights.size(); // Number of items
+
+    // Function call to get the maximum value
+    cout << "Maximum value in Knapsack = " << knapsack(W, weights, values, n) << endl;
+
+    return 0;
+}

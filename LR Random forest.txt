@@ -1,0 +1,122 @@
+# Importing the required libraries
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+import haversine as hs # For distance calculation
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import r2_score, mean_squared_error
+
+# 1. Importing the dataset
+df = pd.read_csv("uber.csv")
+
+# 2. Pre-process the dataset
+print(df.head())  # Show first few rows of the dataset
+print(df.info())  # Get information about the dataset
+df.drop(['Unnamed: 0', 'key'], axis=1, inplace=True)  # Drop unnecessary columns
+
+# Checking for missing values
+print(df.isnull().sum())  # Print the count of missing values
+
+# Filling missing values
+df['dropoff_latitude'].fillna(value=df['dropoff_latitude'].mean(), inplace=True)
+df['dropoff_longitude'].fillna(value=df['dropoff_longitude'].median(), inplace=True)
+
+# Check types and shape of the dataframe
+print(df.dtypes)
+print(df.shape)  # Total (Rows, Columns)
+print(df.describe())  # Statistics of each column
+
+# 3. Convert 'pickup_datetime' to DateTime format
+df['pickup_datetime'] = pd.to_datetime(df['pickup_datetime'], errors='coerce')
+
+# 4. Extract date and time components
+df['hour'] = df['pickup_datetime'].dt.hour
+df['day'] = df['pickup_datetime'].dt.day
+df['month'] = df['pickup_datetime'].dt.month
+df['year'] = df['pickup_datetime'].dt.year
+df['dayofweek'] = df['pickup_datetime'].dt.dayofweek
+
+# Drop the original 'pickup_datetime' column
+df.drop('pickup_datetime', axis=1, inplace=True)
+
+# 5. Checking for outliers using boxplot
+df.plot(kind="box", subplots=True, layout=(7, 2), figsize=(15, 20))
+
+# Function to remove outliers using the Interquartile Range (IQR)
+def remove_outliers(df1, col):
+    Q1 = df1[col].quantile(0.25)
+    Q3 = df1[col].quantile(0.75)
+    IQR = Q3 - Q1
+    lower_whisker = Q1 - 1.5 * IQR
+    upper_whisker = Q3 + 1.5 * IQR
+    df1[col] = np.clip(df1[col], lower_whisker, upper_whisker)
+    return df1
+
+# Apply the outlier removal function to all columns
+def treat_outliers_all(df1, col_list):
+    for c in col_list:
+        df1 = remove_outliers(df1, c)
+    return df1
+
+df = treat_outliers_all(df, df.columns)  # Remove outliers from the entire dataframe
+df.plot(kind="box", subplots=True, layout=(7, 2), figsize=(15, 20))  # Boxplot after outlier removal
+
+# 6. Distance Calculation using Haversine
+travel_dist = []
+for pos in range(len(df)):
+    loc1 = (df['pickup_latitude'][pos], df['pickup_longitude'][pos])
+    loc2 = (df['dropoff_latitude'][pos], df['dropoff_longitude'][pos])
+    travel_dist.append(hs.haversine(loc1, loc2))  # Calculate distance
+
+df['dist_travel_km'] = travel_dist  # Add distance to the dataframe
+
+# Filter out unrealistic distances
+df = df[(df['dist_travel_km'] >= 1) & (df['dist_travel_km'] <= 130)]
+
+# 7. Remove incorrect latitude and longitude values
+incorrect_coordinates = df.loc[
+    (df['pickup_latitude'] > 90) | (df['pickup_latitude'] < -90) |
+    (df['dropoff_latitude'] > 90) | (df['dropoff_latitude'] < -90) |
+    (df['pickup_longitude'] > 180) | (df['pickup_longitude'] < -180) |
+    (df['dropoff_longitude'] > 180) | (df['dropoff_longitude'] < -180)
+]
+df.drop(incorrect_coordinates.index, inplace=True, errors='ignore')
+
+# 8. Visualize missing values with a heatmap
+sns.heatmap(df.isnull(), cbar=False)
+
+# 9. Correlation analysis
+corr = df.corr()
+plt.figure(figsize=(10, 6))
+sns.heatmap(corr, annot=True)  # Correlation heatmap
+
+# 10. Dividing the dataset into features and target variable
+X = df[['pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude',
+         'passenger_count', 'hour', 'day', 'month', 'year', 'dayofweek', 'dist_travel_km']]
+y = df['fare_amount']
+
+# 11. Splitting the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)
+
+# 12. Linear Regression
+regression = LinearRegression()
+regression.fit(X_train, y_train)
+predictions_linear = regression.predict(X_test)
+
+# 13. Evaluate Linear Regression Model
+print("Linear Regression R2:", r2_score(y_test, predictions_linear))
+print("Linear Regression MSE:", mean_squared_error(y_test, predictions_linear))
+print("Linear Regression RMSE:", np.sqrt(mean_squared_error(y_test, predictions_linear)))
+
+# 14. Random Forest Regression
+rf = RandomForestRegressor(n_estimators=100)
+rf.fit(X_train, y_train)
+predictions_rf = rf.predict(X_test)
+
+# 15. Evaluate Random Forest Model
+print("Random Forest R2:", r2_score(y_test, predictions_rf))
+print("Random Forest MSE:", mean_squared_error(y_test, predictions_rf))
+print("Random Forest RMSE:", np.sqrt(mean_squared_error(y_test, predictions_rf)))

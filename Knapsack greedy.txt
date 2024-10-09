@@ -1,0 +1,41 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+// Structure for item with value and weight
+struct Item {
+    int value, weight;
+    Item(int v, int w) : value(v), weight(w) {}  // Constructor for Item
+};
+
+// Comparison function to sort by value/weight ratio
+bool cmp(Item a, Item b) {
+    return (double)a.value / a.weight > (double)b.value / b.weight;
+}
+
+// Function to calculate the maximum value that can fit in the knapsack
+double fractionalKnapsack(int W, Item arr[], int N) {
+    sort(arr, arr + N, cmp);  // Sort items by value/weight ratio
+    double maxValue = 0.0;    // Store the result (maximum value)
+    
+    for (int i = 0; i < N; i++) {
+        if (arr[i].weight <= W) {
+            W -= arr[i].weight;            // If the item fits, take it fully
+            maxValue += arr[i].value;
+        } else {
+            maxValue += arr[i].value * ((double)W / arr[i].weight);  // Take the fraction
+            break;                         // Knapsack is full, stop
+        }
+    }
+    
+    return maxValue;
+}
+
+// Driver code
+int main() {
+    int W = 50;  // Total weight capacity of the knapsack
+    Item arr[] = { {60, 10}, {100, 20}, {120, 30} };  // Array of items (value, weight)
+    int N = sizeof(arr) / sizeof(arr[0]);  // Number of items
+
+    cout << "Maximum value we can obtain = " << fractionalKnapsack(W, arr, N);  // Output the result
+    return 0;
+}

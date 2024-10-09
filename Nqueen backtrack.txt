@@ -1,0 +1,65 @@
+#include <iostream>
+#define N 8 // Size of the chessboard (N x N)
+
+using namespace std;
+
+// Function to print the chessboard solution
+void printSolution(int board[N][N]) {
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++)
+            cout << board[i][j] << " "; // Print 1 for queen and 0 for empty
+        cout << endl;
+    }
+}
+
+// Check if a queen can be placed at board[row][col]
+bool isSafe(int board[N][N], int row, int col) {
+    // Check the current row on the left side
+    for (int i = 0; i < col; i++)
+        if (board[row][i]) return false; // Another queen in the same row
+
+    // Check upper diagonal on the left side
+    for (int i = row, j = col; i >= 0 && j >= 0; i--, j--)
+        if (board[i][j]) return false; // Another queen in the upper diagonal
+
+    // Check lower diagonal on the left side
+    for (int i = row, j = col; j >= 0 && i < N; i++, j--)
+        if (board[i][j]) return false; // Another queen in the lower diagonal
+
+    return true; // Safe to place queen
+}
+
+// Utility function to solve N-Queens problem using backtracking
+bool solveNQUtil(int board[N][N], int col) {
+    // If all queens are placed, return true
+    if (col >= N) return true;
+
+    // Try placing a queen in each row of the current column
+    for (int i = 0; i < N; i++) {
+        if (isSafe(board, i, col)) { // Check if it's safe to place a queen
+            board[i][col] = 1; // Place queen
+            // Recur to place the rest of the queens
+            if (solveNQUtil(board, col + 1))
+                return true; // If successful, return true
+            board[i][col] = 0; // Backtrack if placing queen doesn't lead to a solution
+        }
+    }
+    return false; // No solution found
+}
+
+// Function to solve the N-Queens problem
+bool solveNQ() {
+    int board[N][N] = {0}; // Initialize the board with zeros
+    if (!solveNQUtil(board, 0)) { // Start solving from the first column
+        cout << "Solution does not exist" << endl;
+        return false;
+    }
+    printSolution(board); // Print the solution if found
+    return true;
+}
+
+// Main function
+int main() {
+    solveNQ(); // Solve the N-Queens problem
+    return 0; // End of program
+}

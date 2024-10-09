@@ -1,0 +1,29 @@
+#include<iostream>
+using namespace std;
+
+void printFibonacci(int n) {
+    static int n1 = 0, n2 = 1, n3;
+    
+    if (n > 0) {
+        n3 = n1 + n2;  // Calculate the next number in series
+        n1 = n2;  // Shift n1 to n2
+        n2 = n3;  // Shift n2 to the newly calculated n3
+        cout << n3 << " ";  // Print the next number
+        printFibonacci(n - 1);  // Recursive call for the remaining terms
+    }
+}
+
+int main() {
+    int n;
+    
+    // Ask user for number of elements
+    cout << "Enter the number of elements: ";
+    cin >> n;
+    
+    // Print the first two Fibonacci numbers (0 and 1)
+    cout << "Fibonacci Series: 0 1 ";
+    
+    // Call the recursive function to print the rest of the series
+    printFibonacci(n - 2);  // n-2 because 2 numbers are already printed
+    return 0;
+}

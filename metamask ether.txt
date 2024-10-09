@@ -1,0 +1,28 @@
+from web3 import Web3
+
+# Connect to Ethereum network (Infura)
+infura_url = "https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID"  # Replace with your Infura Project ID
+web3 = Web3(Web3.HTTPProvider(infura_url))
+
+# Check connection status
+if web3.isConnected():
+    print("Connected to Ethereum network")
+else:
+    print("Failed to connect")
+
+# Function to calculate transaction cost
+def get_transaction_cost(gas_price_gwei, gas_used):
+    gas_price_ether = gas_price_gwei * 1e-9  # Convert Gwei to Ether
+    return gas_price_ether * gas_used  # Calculate cost in Ether
+
+# Fetch the latest gas price in Gwei
+latest_gas_price = web3.eth.gas_price  # Gas price in wei
+gas_price_gwei = web3.fromWei(latest_gas_price, 'gwei')  # Convert to Gwei
+print(f"Latest Gas Price: {gas_price_gwei} Gwei")
+
+# Example gas used for a standard ETH transfer
+example_gas_used = 21000  # Typical gas limit for a simple ETH transfer
+
+# Calculate and display transaction cost
+transaction_cost = get_transaction_cost(gas_price_gwei, example_gas_used)
+print(f"Transaction Cost: {transaction_cost:.10f} Ether")  # Display cost with 10 decimal precision
